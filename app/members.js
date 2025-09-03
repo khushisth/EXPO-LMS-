@@ -1,99 +1,125 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, ScrollView, TextInput, Alert } from 'react-native';
+import { View, Text, TouchableOpacity, ScrollView, SafeAreaView, TextInput, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
-
+ 
 export default function MembersPage() {
   const router = useRouter();
-  const [searchQuery, setSearchQuery] = useState('');
-  
-  const members = [
-    { id: 1, name: 'John Doe', email: 'john.doe@email.com', phone: '+1-234-567-8901', membershipId: 'LIB001', status: 'Active', booksIssued: 2 },
-    { id: 2, name: 'Jane Smith', email: 'jane.smith@email.com', phone: '+1-234-567-8902', membershipId: 'LIB002', status: 'Active', booksIssued: 1 },
-    { id: 3, name: 'Bob Johnson', email: 'bob.johnson@email.com', phone: '+1-234-567-8903', membershipId: 'LIB003', status: 'Suspended', booksIssued: 0 },
-    { id: 4, name: 'Alice Brown', email: 'alice.brown@email.com', phone: '+1-234-567-8904', membershipId: 'LIB004', status: 'Active', booksIssued: 3 },
-    { id: 5, name: 'Charlie Wilson', email: 'charlie.wilson@email.com', phone: '+1-234-567-8905', membershipId: 'LIB005', status: 'Inactive', booksIssued: 0 },
-  ];
-
-  const filteredMembers = members.filter(member => 
-    member.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    member.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    member.membershipId.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-
-  const getStatusColor = (status) => {
-    switch(status) {
-      case 'Active': return 'status-active px-3 py-1 rounded-full';
-      case 'Suspended': return 'status-issued px-3 py-1 rounded-full';
-      case 'Inactive': return 'status-inactive px-3 py-1 rounded-full';
-      default: return 'status-inactive px-3 py-1 rounded-full';
-    }
-  };
-
+  const [members, setMembers] = useState([
+    { id: 1, name: 'John Doe', email: 'john@example.com', phone: '+1234567890', membershipDate: '2024-01-15' },
+    { id: 2, name: 'Jane Smith', email: 'jane@example.com', phone: '+0987654321', membershipDate: '2024-02-20' },
+    { id: 3, name: 'Bob Johnson', email: 'bob@example.com', phone: '+1122334455', membershipDate: '2024-03-10' },
+  ]);
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [newMember, setNewMember] = useState({ name: '', email: '', phone: '' });
+ 
   const handleAddMember = () => {
-    Alert.alert('Add Member', 'Add new member functionality to be implemented');
+    if (!newMember.name || !newMember.email || !newMember.phone) {
+      Alert.alert('Error', 'Please fill in all fields');
+      return;
+    }
+ 
+    const member = {
+      id: members.length + 1,
+      ...newMember,
+      membershipDate: new Date().toISOString().split('T')[0]
+    };
+ 
+    setMembers([...members, member]);
+    setNewMember({ name: '', email: '', phone: '' });
+    setShowAddForm(false);
+    Alert.alert('Success', 'Member added successfully');
   };
-
+ 
+  const handleDeleteMember = (id) => {
+    Alert.alert(
+      'Confirm Delete',
+      'Are you sure you want to delete this member?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: () => setMembers(members.filter(member => member.id !== id))
+        }
+      ]
+    );
+  };
+ 
   return (
-    <ScrollView className="flex-1 bg-gray-50">
-      <View className="bg-blue-600 pt-12 pb-6 px-6">
-        <View className="flex-row justify-between items-center mb-4">
-          <TouchableOpacity
-            onPress={() => router.back()}
-            className="bg-blue-700 px-3 py-2 rounded-lg"
-          >
-            <Text className="text-white">← Back</Text>
-          </TouchableOpacity>
-          <Text className="text-white text-xl font-bold">Member Management</Text>
-          <TouchableOpacity
-            onPress={handleAddMember}
-            className="bg-green-600 px-3 py-2 rounded-lg"
-          >
-            <Text className="text-white">+ Add</Text>
-          </TouchableOpacity>
-        </View>
-        
-        <TextInput
-          value={searchQuery}
-          onChangeText={setSearchQuery}
-          placeholder="Search members by name, email, or ID..."
-          placeholderTextColor="#93c5fd"
-          className="bg-blue-700 text-white px-4 py-3 rounded-lg"
-        />
-      </View>
-
-      <View className="p-6">
-        <Text className="text-lg font-semibold text-gray-800 mb-4">
-          Total Members: {filteredMembers.length}
-        </Text>
-
-        {filteredMembers.map((member) => (
-          <View key={member.id} className="bg-white rounded-xl p-4 mb-4 shadow-sm">
-            <View className="flex-row justify-between items-start mb-2">
-              <View className="flex-1">
-                <Text className="text-lg font-semibold text-gray-800 mb-1">
-                  {member.name}
-                </Text>
-                <Text className="text-gray-600 mb-1">{member.email}</Text>
-                <Text className="text-gray-600 mb-1">{member.phone}</Text>
-                <Text className="text-gray-500 text-sm mb-2">ID: {member.membershipId}</Text>
-                <Text className="text-gray-600">Books Issued: {member.booksIssued}</Text>
-              </View>
-              <View className={`px-3 py-1 rounded-full ${getStatusColor(member.status)}`}>
-                <Text className="text-sm font-medium">{member.status}</Text>
-              </View>
-            </View>
-            
-            <View className="flex-row justify-end space-x-2 mt-3">
-              <TouchableOpacity className="bg-blue-100 px-4 py-2 rounded-lg">
-                <Text className="text-blue-600 font-medium">Edit</Text>
-              </TouchableOpacity>
-              <TouchableOpacity className="bg-green-100 px-4 py-2 rounded-lg">
-                <Text className="text-green-600 font-medium">View History</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
+<SafeAreaView className="flex-1 bg-gray-50">
+<View className="bg-green-600 px-6 py-4 rounded-b-3xl flex-row items-center justify-between">
+<TouchableOpacity onPress={() => router.back()}>
+<Text className="text-white text-lg">← Back</Text>
+</TouchableOpacity>
+<Text className="text-white text-xl font-bold">Manage Members</Text>
+<TouchableOpacity onPress={() => setShowAddForm(!showAddForm)}>
+<Text className="text-white text-lg">+ Add</Text>
+</TouchableOpacity>
+</View>
+ 
+      {showAddForm && (
+<View className="bg-white mx-4 mt-4 p-4 rounded-xl shadow-sm">
+<Text className="text-lg font-semibold text-gray-800 mb-4">Add New Member</Text>
+<TextInput
+            value={newMember.name}
+            onChangeText={(text) => setNewMember({...newMember, name: text})}
+            placeholder="Full Name"
+            className="border border-gray-300 rounded-lg px-4 py-3 mb-3 bg-gray-50"
+          />
+<TextInput
+            value={newMember.email}
+            onChangeText={(text) => setNewMember({...newMember, email: text})}
+            placeholder="Email"
+            keyboardType="email-address"
+            autoCapitalize="none"
+            className="border border-gray-300 rounded-lg px-4 py-3 mb-3 bg-gray-50"
+          />
+<TextInput
+            value={newMember.phone}
+            onChangeText={(text) => setNewMember({...newMember, phone: text})}
+            placeholder="Phone Number"
+            keyboardType="phone-pad"
+            className="border border-gray-300 rounded-lg px-4 py-3 mb-4 bg-gray-50"
+          />
+<View className="flex-row space-x-3">
+<TouchableOpacity
+              onPress={handleAddMember}
+              className="flex-1 bg-green-600 py-3 rounded-lg"
+>
+<Text className="text-white text-center font-semibold">Add Member</Text>
+</TouchableOpacity>
+<TouchableOpacity
+              onPress={() => setShowAddForm(false)}
+              className="flex-1 bg-gray-300 py-3 rounded-lg"
+>
+<Text className="text-gray-700 text-center font-semibold">Cancel</Text>
+</TouchableOpacity>
+</View>
+</View>
+      )}
+ 
+<ScrollView className="flex-1 px-4 pt-4">
+        {members.map((member) => (
+<View key={member.id} className="bg-white rounded-xl p-4 mb-3 shadow-sm">
+<View className="flex-row justify-between items-start">
+<View className="flex-1">
+<Text className="text-lg font-semibold text-gray-800">{member.name}</Text>
+<Text className="text-gray-600">{member.email}</Text>
+<Text className="text-gray-500 text-sm">{member.phone}</Text>
+<Text className="text-gray-400 text-xs mt-1">
+                  Member since: {member.membershipDate}
+</Text>
+</View>
+<TouchableOpacity
+                onPress={() => handleDeleteMember(member.id)}
+                className="p-2"
+>
+<Text className="text-red-500 text-lg">🗑️</Text>
+</TouchableOpacity>
+</View>
+</View>
         ))}
-      </View>
-    </ScrollView>
+</ScrollView>
+</SafeAreaView>
   );
 }

@@ -2,44 +2,44 @@ import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, ScrollView, SafeAreaView, TextInput, Alert, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
  
-export default function BooksPage() {
+export default function MembersPage() {
   const router = useRouter();
-  const [books, setBooks] = useState([
-    { id: 1, title: 'To Kill a Mockingbird', author: 'Harper Lee', isbn: '978-0061120084', available: true },
-    { id: 2, title: '1984', author: 'George Orwell', isbn: '978-0451524935', available: false },
-    { id: 3, title: 'Pride and Prejudice', author: 'Jane Austen', isbn: '978-0486284736', available: true },
+  const [members, setMembers] = useState([
+    { id: 1, name: 'John Doe', email: 'john@example.com', phone: '+1234567890', membershipDate: '2024-01-15' },
+    { id: 2, name: 'Jane Smith', email: 'jane@example.com', phone: '+0987654321', membershipDate: '2024-02-20' },
+    { id: 3, name: 'Bob Johnson', email: 'bob@example.com', phone: '+1122334455', membershipDate: '2024-03-10' },
   ]);
   const [showAddForm, setShowAddForm] = useState(false);
-  const [newBook, setNewBook] = useState({ title: '', author: '', isbn: '' });
+  const [newMember, setNewMember] = useState({ name: '', email: '', phone: '' });
  
-  const handleAddBook = () => {
-    if (!newBook.title || !newBook.author || !newBook.isbn) {
+  const handleAddMember = () => {
+    if (!newMember.name || !newMember.email || !newMember.phone) {
       Alert.alert('Error', 'Please fill in all fields');
       return;
     }
  
-    const book = {
-      id: books.length + 1,
-      ...newBook,
-      available: true
+    const member = {
+      id: members.length + 1,
+      ...newMember,
+      membershipDate: new Date().toISOString().split('T')[0]
     };
  
-    setBooks([...books, book]);
-    setNewBook({ title: '', author: '', isbn: '' });
+    setMembers([...members, member]);
+    setNewMember({ name: '', email: '', phone: '' });
     setShowAddForm(false);
-    Alert.alert('Success', 'Book added successfully');
+    Alert.alert('Success', 'Member added successfully');
   };
  
-  const handleDeleteBook = (id) => {
+  const handleDeleteMember = (id) => {
     Alert.alert(
       'Confirm Delete',
-      'Are you sure you want to delete this book?',
+      'Are you sure you want to delete this member?',
       [
         { text: 'Cancel', style: 'cancel' },
         {
           text: 'Delete',
           style: 'destructive',
-          onPress: () => setBooks(books.filter(book => book.id !== id))
+          onPress: () => setMembers(members.filter(member => member.id !== id))
         }
       ]
     );
@@ -51,7 +51,7 @@ export default function BooksPage() {
         <TouchableOpacity onPress={() => router.back()}>
           <Text style={styles.backButton}>← Back</Text>
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Manage Books</Text>
+        <Text style={styles.headerTitle}>Manage Members</Text>
         <TouchableOpacity onPress={() => setShowAddForm(!showAddForm)}>
           <Text style={styles.addButton}>+ Add</Text>
         </TouchableOpacity>
@@ -59,34 +59,37 @@ export default function BooksPage() {
  
       {showAddForm && (
         <View style={styles.addForm}>
-          <Text style={styles.formTitle}>Add New Book</Text>
+          <Text style={styles.formTitle}>Add New Member</Text>
           <TextInput
-            value={newBook.title}
-            onChangeText={(text) => setNewBook({...newBook, title: text})}
-            placeholder="Book Title"
+            value={newMember.name}
+            onChangeText={(text) => setNewMember({...newMember, name: text})}
+            placeholder="Full Name"
             style={styles.input}
             placeholderTextColor="#9ca3af"
           />
           <TextInput
-            value={newBook.author}
-            onChangeText={(text) => setNewBook({...newBook, author: text})}
-            placeholder="Author"
+            value={newMember.email}
+            onChangeText={(text) => setNewMember({...newMember, email: text})}
+            placeholder="Email"
+            keyboardType="email-address"
+            autoCapitalize="none"
             style={styles.input}
             placeholderTextColor="#9ca3af"
           />
           <TextInput
-            value={newBook.isbn}
-            onChangeText={(text) => setNewBook({...newBook, isbn: text})}
-            placeholder="ISBN"
+            value={newMember.phone}
+            onChangeText={(text) => setNewMember({...newMember, phone: text})}
+            placeholder="Phone Number"
+            keyboardType="phone-pad"
             style={styles.input}
             placeholderTextColor="#9ca3af"
           />
           <View style={styles.formButtons}>
             <TouchableOpacity
-              onPress={handleAddBook}
-              style={[styles.button, styles.addBookButton]}
+              onPress={handleAddMember}
+              style={[styles.button, styles.addMemberButton]}
             >
-              <Text style={styles.buttonText}>Add Book</Text>
+              <Text style={styles.buttonText}>Add Member</Text>
             </TouchableOpacity>
             <TouchableOpacity
               onPress={() => setShowAddForm(false)}
@@ -99,27 +102,23 @@ export default function BooksPage() {
       )}
  
       <ScrollView style={styles.scrollView}>
-        {books.map((book) => (
-          <View key={book.id} style={styles.bookCard}>
-            <View style={styles.bookHeader}>
-              <View style={styles.bookInfo}>
-                <Text style={styles.bookTitle}>{book.title}</Text>
-                <Text style={styles.bookAuthor}>by {book.author}</Text>
-                <Text style={styles.bookIsbn}>ISBN: {book.isbn}</Text>
+        {members.map((member) => (
+          <View key={member.id} style={styles.memberCard}>
+            <View style={styles.memberHeader}>
+              <View style={styles.memberInfo}>
+                <Text style={styles.memberName}>{member.name}</Text>
+                <Text style={styles.memberEmail}>{member.email}</Text>
+                <Text style={styles.memberPhone}>{member.phone}</Text>
+                <Text style={styles.membershipDate}>
+                  Member since: {member.membershipDate}
+                </Text>
               </View>
-              <View style={styles.bookActions}>
-                <View style={[styles.statusBadge, book.available ? styles.availableBadge : styles.issuedBadge]}>
-                  <Text style={[styles.statusText, book.available ? styles.availableText : styles.issuedText]}>
-                    {book.available ? 'Available' : 'Issued'}
-                  </Text>
-                </View>
-                <TouchableOpacity
-                  onPress={() => handleDeleteBook(book.id)}
-                  style={styles.deleteButton}
-                >
-                  <Text style={styles.deleteIcon}>🗑️</Text>
-                </TouchableOpacity>
-              </View>
+              <TouchableOpacity
+                onPress={() => handleDeleteMember(member.id)}
+                style={styles.deleteButton}
+              >
+                <Text style={styles.deleteIcon}>🗑️</Text>
+              </TouchableOpacity>
             </View>
           </View>
         ))}
@@ -134,7 +133,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#f9fafb',
   },
   header: {
-    backgroundColor: '#2563eb',
+    backgroundColor: '#16a34a',
     paddingHorizontal: 24,
     paddingVertical: 16,
     borderBottomLeftRadius: 24,
@@ -195,8 +194,8 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     alignItems: 'center',
   },
-  addBookButton: {
-    backgroundColor: '#2563eb',
+  addMemberButton: {
+    backgroundColor: '#16a34a',
   },
   cancelButton: {
     backgroundColor: '#d1d5db',
@@ -214,7 +213,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingTop: 16,
   },
-  bookCard: {
+  memberCard: {
     backgroundColor: 'white',
     borderRadius: 12,
     padding: 16,
@@ -225,53 +224,33 @@ const styles = StyleSheet.create({
     shadowRadius: 2,
     elevation: 2,
   },
-  bookHeader: {
+  memberHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
-    marginBottom: 8,
   },
-  bookInfo: {
+  memberInfo: {
     flex: 1,
   },
-  bookTitle: {
+  memberName: {
     fontSize: 18,
     fontWeight: '600',
     color: '#1f2937',
   },
-  bookAuthor: {
+  memberEmail: {
     color: '#6b7280',
     fontSize: 14,
+    marginTop: 2,
   },
-  bookIsbn: {
+  memberPhone: {
     color: '#9ca3af',
+    fontSize: 14,
+    marginTop: 2,
+  },
+  membershipDate: {
+    color: '#d1d5db',
     fontSize: 12,
-  },
-  bookActions: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  statusBadge: {
-    paddingHorizontal: 12,
-    paddingVertical: 4,
-    borderRadius: 20,
-    marginRight: 12,
-  },
-  availableBadge: {
-    backgroundColor: '#dcfce7',
-  },
-  issuedBadge: {
-    backgroundColor: '#fecaca',
-  },
-  statusText: {
-    fontSize: 12,
-    fontWeight: '500',
-  },
-  availableText: {
-    color: '#166534',
-  },
-  issuedText: {
-    color: '#dc2626',
+    marginTop: 4,
   },
   deleteButton: {
     padding: 8,

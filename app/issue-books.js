@@ -1,141 +1,115 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, ScrollView, TextInput, Alert } from 'react-native';
+import { View, Text, TouchableOpacity, ScrollView, SafeAreaView, TextInput, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
-
-export default function IssueBookPage() {
+ 
+export default function IssueBooksPage() {
   const router = useRouter();
-  const [selectedBook, setSelectedBook] = useState('');
   const [selectedMember, setSelectedMember] = useState('');
-  const [dueDate, setDueDate] = useState('');
-
+  const [selectedBook, setSelectedBook] = useState('');
+  const [issuedBooks, setIssuedBooks] = useState([
+    { id: 1, bookTitle: '1984', memberName: 'John Doe', issueDate: '2024-01-15', dueDate: '2024-02-15' },
+    { id: 2, bookTitle: 'Pride and Prejudice', memberName: 'Jane Smith', issueDate: '2024-01-20', dueDate: '2024-02-20' },
+  ]);
+ 
   const availableBooks = [
-    { id: 1, title: 'The Great Gatsby', author: 'F. Scott Fitzgerald', isbn: '978-0-7432-7356-5' },
-    { id: 3, title: 'To Kill a Mockingbird', author: 'Harper Lee', isbn: '978-0-06-112008-4' },
-    { id: 4, title: 'Pride and Prejudice', author: 'Jane Austen', isbn: '978-0-14-143951-8' },
+    { id: 1, title: 'To Kill a Mockingbird' },
+    { id: 3, title: 'The Great Gatsby' },
+    { id: 4, title: 'Lord of the Flies' },
   ];
-
-  const activeMembers = [
-    { id: 1, name: 'John Doe', membershipId: 'LIB001' },
-    { id: 2, name: 'Jane Smith', membershipId: 'LIB002' },
-    { id: 4, name: 'Alice Brown', membershipId: 'LIB004' },
+ 
+  const members = [
+    { id: 1, name: 'John Doe' },
+    { id: 2, name: 'Jane Smith' },
+    { id: 3, name: 'Bob Johnson' },
   ];
-
-  const recentIssues = [
-    { id: 1, bookTitle: 'The Great Gatsby', memberName: 'John Doe', issueDate: '2025-08-25', dueDate: '2025-09-08', status: 'Active' },
-    { id: 2, bookTitle: '1984', memberName: 'Jane Smith', issueDate: '2025-08-20', dueDate: '2025-09-03', status: 'Overdue' },
-    { id: 3, bookTitle: 'Harry Potter', memberName: 'Alice Brown', issueDate: '2025-08-28', dueDate: '2025-09-11', status: 'Active' },
-  ];
-
+ 
   const handleIssueBook = () => {
-    if (!selectedBook || !selectedMember || !dueDate) {
-      Alert.alert('Error', 'Please fill in all fields');
+    if (!selectedMember || !selectedBook) {
+      Alert.alert('Error', 'Please select both member and book');
       return;
     }
-    Alert.alert('Success', 'Book issued successfully!');
-    setSelectedBook('');
+ 
+    const issueDate = new Date().toISOString().split('T')[0];
+    const dueDate = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+ 
+    const newIssue = {
+      id: issuedBooks.length + 1,
+      bookTitle: availableBooks.find(book => book.id.toString() === selectedBook)?.title,
+      memberName: members.find(member => member.id.toString() === selectedMember)?.name,
+      issueDate,
+      dueDate
+    };
+ 
+    setIssuedBooks([...issuedBooks, newIssue]);
     setSelectedMember('');
-    setDueDate('');
+    setSelectedBook('');
+    Alert.alert('Success', 'Book issued successfully');
   };
-
-  const getStatusColor = (status) => {
-    switch(status) {
-      case 'Active': return 'bg-green-100 text-green-800';
-      case 'Overdue': return 'bg-red-100 text-red-800';
-      default: return 'bg-gray-100 text-gray-800';
-    }
-  };
-
+ 
   return (
-    <ScrollView className="flex-1 bg-gray-50">
-      <View className="bg-blue-600 pt-12 pb-6 px-6">
-        <View className="flex-row justify-between items-center">
-          <TouchableOpacity
-            onPress={() => router.back()}
-            className="bg-blue-700 px-3 py-2 rounded-lg"
-          >
-            <Text className="text-white">← Back</Text>
-          </TouchableOpacity>
-          <Text className="text-white text-xl font-bold">Issue Books</Text>
-          <View className="w-16" />
-        </View>
-      </View>
-
-      <View className="p-6">
-        {/* Issue Book Form */}
-        <View className="bg-white rounded-xl p-6 shadow-sm mb-6">
-          <Text className="text-xl font-semibold text-gray-800 mb-4">Issue New Book</Text>
+<SafeAreaView className="flex-1 bg-gray-50">
+<View className="bg-orange-600 px-6 py-4 rounded-b-3xl flex-row items-center justify-between">
+<TouchableOpacity onPress={() => router.back()}>
+<Text className="text-white text-lg">← Back</Text>
+</TouchableOpacity>
+<Text className="text-white text-xl font-bold">Issue Books</Text>
+<View className="w-12" />
+</View>
+ 
+<ScrollView className="flex-1 px-4 pt-4">
+<View className="bg-white rounded-xl p-4 mb-4 shadow-sm">
+<Text className="text-lg font-semibold text-gray-800 mb-4">Issue New Book</Text>
           
-          <View className="mb-4">
-            <Text className="text-gray-700 font-medium mb-2">Select Book</Text>
-            <View className="border border-gray-300 rounded-lg">
-              {availableBooks.map((book) => (
-                <TouchableOpacity
-                  key={book.id}
-                  onPress={() => setSelectedBook(book.title)}
-                  className={`p-3 border-b border-gray-200 ${selectedBook === book.title ? 'bg-blue-50' : ''}`}
-                >
-                  <Text className="font-medium text-gray-800">{book.title}</Text>
-                  <Text className="text-gray-600 text-sm">by {book.author}</Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-          </View>
-
-          <View className="mb-4">
-            <Text className="text-gray-700 font-medium mb-2">Select Member</Text>
-            <View className="border border-gray-300 rounded-lg">
-              {activeMembers.map((member) => (
-                <TouchableOpacity
-                  key={member.id}
-                  onPress={() => setSelectedMember(member.name)}
-                  className={`p-3 border-b border-gray-200 ${selectedMember === member.name ? 'bg-blue-50' : ''}`}
-                >
-                  <Text className="font-medium text-gray-800">{member.name}</Text>
-                  <Text className="text-gray-600 text-sm">ID: {member.membershipId}</Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-          </View>
-
-          <View className="mb-6">
-            <Text className="text-gray-700 font-medium mb-2">Due Date</Text>
-            <TextInput
-              value={dueDate}
-              onChangeText={setDueDate}
-              placeholder="YYYY-MM-DD"
-              className="border border-gray-300 rounded-lg px-4 py-3 text-gray-800 bg-gray-50"
-            />
-          </View>
-
-          <TouchableOpacity
+<Text className="text-gray-700 font-medium mb-2">Select Member</Text>
+<View className="border border-gray-300 rounded-lg mb-4 bg-gray-50">
+            {members.map((member) => (
+<TouchableOpacity
+                key={member.id}
+                onPress={() => setSelectedMember(member.id.toString())}
+                className={`p-3 border-b border-gray-200 ${selectedMember === member.id.toString() ? 'bg-orange-100' : ''}`}
+>
+<Text className={`${selectedMember === member.id.toString() ? 'text-orange-800 font-semibold' : 'text-gray-800'}`}>
+                  {member.name}
+</Text>
+</TouchableOpacity>
+            ))}
+</View>
+ 
+<Text className="text-gray-700 font-medium mb-2">Select Book</Text>
+<View className="border border-gray-300 rounded-lg mb-4 bg-gray-50">
+            {availableBooks.map((book) => (
+<TouchableOpacity
+                key={book.id}
+                onPress={() => setSelectedBook(book.id.toString())}
+                className={`p-3 border-b border-gray-200 ${selectedBook === book.id.toString() ? 'bg-orange-100' : ''}`}
+>
+<Text className={`${selectedBook === book.id.toString() ? 'text-orange-800 font-semibold' : 'text-gray-800'}`}>
+                  {book.title}
+</Text>
+</TouchableOpacity>
+            ))}
+</View>
+ 
+<TouchableOpacity
             onPress={handleIssueBook}
-            className="bg-blue-600 py-4 rounded-lg"
-          >
-            <Text className="text-white text-lg font-semibold text-center">Issue Book</Text>
-          </TouchableOpacity>
-        </View>
-
-        {/* Recent Issues */}
-        <View className="bg-white rounded-xl p-6 shadow-sm">
-          <Text className="text-xl font-semibold text-gray-800 mb-4">Recent Issues</Text>
-          
-          {recentIssues.map((issue) => (
-            <View key={issue.id} className="border-b border-gray-200 pb-4 mb-4 last:border-b-0 last:mb-0">
-              <View className="flex-row justify-between items-start mb-2">
-                <View className="flex-1">
-                  <Text className="font-semibold text-gray-800">{issue.bookTitle}</Text>
-                  <Text className="text-gray-600">Issued to: {issue.memberName}</Text>
-                  <Text className="text-gray-500 text-sm">Issue Date: {issue.issueDate}</Text>
-                  <Text className="text-gray-500 text-sm">Due Date: {issue.dueDate}</Text>
-                </View>
-                <View className={`px-3 py-1 rounded-full ${getStatusColor(issue.status)}`}>
-                  <Text className="text-sm font-medium">{issue.status}</Text>
-                </View>
-              </View>
-            </View>
+            className="bg-orange-600 py-4 rounded-lg"
+>
+<Text className="text-white text-center font-semibold text-lg">Issue Book</Text>
+</TouchableOpacity>
+</View>
+ 
+<View className="bg-white rounded-xl p-4 shadow-sm">
+<Text className="text-lg font-semibold text-gray-800 mb-4">Currently Issued Books</Text>
+          {issuedBooks.map((issue) => (
+<View key={issue.id} className="border-b border-gray-200 pb-3 mb-3">
+<Text className="text-gray-800 font-semibold">{issue.bookTitle}</Text>
+<Text className="text-gray-600">Issued to: {issue.memberName}</Text>
+<Text className="text-gray-500 text-sm">Issue Date: {issue.issueDate}</Text>
+<Text className="text-gray-500 text-sm">Due Date: {issue.dueDate}</Text>
+</View>
           ))}
-        </View>
-      </View>
-    </ScrollView>
+</View>
+</ScrollView>
+</SafeAreaView>
   );
 }
